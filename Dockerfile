@@ -1,5 +1,6 @@
 FROM alpine:3.19.1
 RUN apk add --no-cache openssh && ssh-keygen -A
+RUN apk add kubectl k9s
 
 ENV USERNAME="root"
 ENV PASSWORD="root"
