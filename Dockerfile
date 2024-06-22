@@ -1,6 +1,6 @@
 FROM alpine:3.19.1
 RUN apk add --no-cache openssh
-RUN apk add kubectl k9s
+RUN apk add kubectl k9s openssl jq screen bash curl
 
 RUN mkdir -p /root/.ssh && chmod 0700 /root/.ssh
 
