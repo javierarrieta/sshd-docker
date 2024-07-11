@@ -1,6 +1,6 @@
 FROM alpine:3.20
 RUN apk add --no-cache openssh
-RUN apk add kubectl k9s openssl jq screen bash curl age sops
+RUN apk add kubectl k9s openssl jq screen bash curl age sops postgresql15-client
 
 RUN mkdir -p /root/.ssh && chmod 0700 /root/.ssh
 
