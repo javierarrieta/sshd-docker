@@ -1,4 +1,4 @@
-FROM alpine:3.3.23.2
+FROM alpine:3.23.2
 RUN apk add --no-cache openssh
 RUN apk add kubectl k9s openssl jq screen bash curl age sops postgresql18-client ncurses bind-tools nmap nmap-scripts
 
