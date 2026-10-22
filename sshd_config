@@ -1,0 +1,69 @@
+# sshd_config for javierarrieta/sshd-docker.
+#
+# This file replaces the option soup that used to live in the image CMD as a
+# chain of `-o` flags inside `sh -c`. A config nobody could read is how
+# `KexAlgorithms=+diffie-hellman-group1-sha1` survived unnoticed.
+#
+# sshd keeps the FIRST value obtained for each option, so ordering matters when
+# something is also set on the command line.
+
+Port 22
+AddressFamily inet
+LogLevel VERBOSE
+
+# --- authentication: keys only -------------------------------------------
+#
+# PermitRootLogin used to be `yes`, which is weaker than OpenSSH's own default
+# of `prohibit-password`. With PasswordAuthentication off the practical gap was
+# keyboard-interactive only, but `prohibit-password` states the intent and
+# cannot be weakened by a later PasswordAuthentication change.
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+PermitRootLogin prohibit-password
+MaxAuthTries 3
+LoginGraceTime 30
+AuthorizedKeysFile .ssh/authorized_keys
+
+# --- forwarding ----------------------------------------------------------
+#
+# GatewayPorts was `yes`. That lets `ssh -R` forwards bind to a routable
+# address on this host, and this host is port-forwarded from the WAN and on a
+# flat L2 -- so any authenticated session could open a listener reachable by
+# every machine on the network. Now `no`.
+#
+# AllowTcpForwarding and AllowAgentForwarding stay on; local and SOCKS forwards
+# do not expose the host this way.
+AllowTcpForwarding yes
+AllowAgentForwarding yes
+GatewayPorts no
+X11Forwarding no
+
+# --- session lifetime ----------------------------------------------------
+#
+# Defaults were 0/3, i.e. keepalive off: an abandoned session lived until the
+# pod restarted.
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# --- host keys -----------------------------------------------------------
+#
+# DSA is deliberately absent. OpenSSH 10 cannot load it; the previous image
+# listed ssh_host_dsa_key and logged
+#   Unable to load host key "...ssh_host_dsa_key": unknown or unsupported key type
+# on every single start.
+#
+# No `Subsystem sftp` line: Alpine ships sftp-server in the separate
+# `openssh-sftp-server` package, which this image does not install, so sftp was
+# never available here and adding the line would only produce errors.
+HostKey /etc/ssh/hostKeys/ssh_host_ed25519_key
+HostKey /etc/ssh/hostKeys/ssh_host_ecdsa_key
+HostKey /etc/ssh/hostKeys/ssh_host_rsa_key
+
+# --- misc ----------------------------------------------------------------
+#
+# UsePAM is intentionally NOT set: Alpine's OpenSSH is built without PAM, and
+# enabling it would fail. The default (no) is correct for this image.
+UseDNS no
+StrictModes yes
+PrintMotd no
